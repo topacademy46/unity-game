@@ -3,21 +3,42 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     [SerializeField] private float moveSpeed;
-    [SerializeField] private Animator animator;
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private float jumpForce;
+    private AnimController animController;
 
+    void Start()
+    {
+        animController = GetComponent<AnimController>();
+    }
 
     void Update()
     {
-        if (rb.velocity.x == 0 && rb.velocity.y == 0)
+        if (Mathf.Abs(rb.velocity.x) < 0.1f && Mathf.Abs(rb.velocity.y) < 0.1f)
         {
-            animator.SetBool("isIdle", true);
+            animController.isIdle = true;
         }
         else
         {
-            animator.SetBool("isIdle", false);
+            animController.isIdle = false;
         }
+
+        if (rb.velocity.y > 0)
+        {
+            animController.isJumping = true;
+            animController.isFalling = false;
+        }
+        else if (rb.velocity.y < 0)
+        {
+            animController.isFalling = true;
+            animController.isJumping = false;
+        }
+        else
+        {
+            animController.isJumping = false;
+            animController.isFalling = false;
+        }
+
         Move();
         Jump();
     }
@@ -26,7 +47,9 @@ public class Movement : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A))
         {
-            animator.SetBool("isRun", true);
+            animController.isRun = true;
+            animController.isIdle = false;
+
             if (Input.GetKey(KeyCode.D))
             {
                 transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
@@ -40,7 +63,7 @@ public class Movement : MonoBehaviour
         }
         else
         {
-            animator.SetBool("isRun", false);
+            animController.isRun = false;
         }
     }
 
@@ -51,12 +74,8 @@ public class Movement : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space) && rb.velocity.y == 0)
         {
-            animator.SetBool("isJump", true);
+
             rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
-        }
-        else
-        {
-            animator.SetBool("isJump", false);
         }
     }
 }
